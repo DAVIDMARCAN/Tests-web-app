@@ -4,7 +4,7 @@ import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1
 const firebaseConfig = {
     apiKey: "TU_API_KEY",
     authDomain: "qr-aplicaciones-moviles.firebaseapp.com",
-    databaseURL: "https://qr-aplicaciones-moviles-default-rtdb.firebaseio.com/",
+    databaseURL: "https://qr-aplicaciones-moviles-default-rtdb.firebaseio.com/", // Asegura la URL completa
     projectId: "qr-aplicaciones-moviles",
     storageBucket: "qr-aplicaciones-moviles.appspot.com",
     messagingSenderId: "767462909837",
@@ -117,78 +117,16 @@ function mostrarSinRegistros() {
     `;
 }
 
-function filtrarHistorial() {
-    let trabajadorSeleccionado = filtroTrabajador.value;
-    let fechaSeleccionada = filtroFecha.value;
-
-    const usuariosRef = ref(db, "usuarios");
-
-    get(usuariosRef).then(snapshot => {
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            let registros = [];
-
-            Object.keys(data).forEach(uid => {
-                const usuario = data[uid];
-                const nombre = usuario.nombre || "Desconocido";
-                const puesto = usuario.puesto || "Sin asignar";
-
-                if (!usuario.Registro) return;
-
-                if (usuario.Registro.Entrada) {
-                    Object.values(usuario.Registro.Entrada).forEach(entrada => {
-                        if ((trabajadorSeleccionado === "Todos" || trabajadorSeleccionado === nombre) &&
-                            (!fechaSeleccionada || entrada.Fecha === fechaSeleccionada)) {
-                            registros.push({ nombre, puesto, fecha: entrada.Fecha, entrada: entrada.Hora, salida: " - " });
-                        }
-                    });
-                }
-
-                if (usuario.Registro.Salida) {
-                    Object.values(usuario.Registro.Salida).forEach(salida => {
-                        if ((trabajadorSeleccionado === "Todos" || trabajadorSeleccionado === nombre) &&
-                            (!fechaSeleccionada || salida.Fecha === fechaSeleccionada)) {
-                            let filaExistente = registros.find(r => r.nombre === nombre && r.fecha === salida.Fecha);
-                            if (filaExistente) {
-                                filaExistente.salida = salida.Hora;
-                            } else {
-                                registros.push({ nombre, puesto, fecha: salida.Fecha, entrada: " - ", salida: salida.Hora });
-                            }
-                        }
-                    });
-                }
-            });
-
-            registros.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-            if (registros.length > 0) {
-                tablaHistorial.innerHTML = registros.map(r => `<tr>
-                    <td>${r.nombre}</td>
-                    <td>${r.puesto}</td>
-                    <td>${r.fecha}</td>
-                    <td>${r.entrada}</td>
-                    <td>${r.salida}</td>
-                </tr>`).join("");
-            } else {
-                mostrarSinRegistros();
-            }
-        } else {
-            mostrarSinRegistros();
-        }
-    }).catch(error => console.error("Error obteniendo historial filtrado:", error));
-}
-
 // Verificar si hay una sesión activa como admin
 if (localStorage.getItem("admin") !== "true") {
     alert("Debes iniciar sesión como administrador.");
-    window.location.href = "/Inicio/index.html"; // Redirigir a la página de inicio de sesión
+    window.location.href = "https://acceso-qr.vercel.app/index.html";
 }
 
 window.cerrarSesion = function () {
-    localStorage.removeItem("admin"); // Eliminar sesión
-    window.location.href = "/Inicio/index.html"; // Redirigir a la página de inicio de sesión
+    localStorage.removeItem("admin");
+    window.location.href = "https://acceso-qr.vercel.app/index.html";
 };
-
 
 cargarTrabajadores();
 cargarHistorial();
